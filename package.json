@@ -1,0 +1,16 @@
+{
+  "name": "openshift-multi-database",
+  "version": "0.0.1",
+  "description": "To use multiple Mysql (or multiple PostgreSQL, ...) in OpenShift",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Filirom1",
+  "license": "MIT",
+  "dependencies": {
+    "node-uuid": "~1.4.0",
+    "tar.gz": "~0.1.1",
+    "rimraf": "~2.2.1"
+  }
+}
