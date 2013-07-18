@@ -11,6 +11,11 @@
   "dependencies": {
     "node-uuid": "~1.4.0",
     "tar.gz": "~0.1.1",
-    "rimraf": "~2.2.1"
+    "rimraf": "~2.2.1",
+    "async": "~0.2.9",
+    "replacestream": "0.0.2",
+    "glob": "~3.2.3",
+    "request": "~2.22.0",
+    "js-yaml": "~2.1.0"
   }
 }
