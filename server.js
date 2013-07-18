@@ -51,7 +51,7 @@ function manifest(req, res){
       'cartridge-short-name': cartridgeShortName,
       'old-cartridge-short-name': oldCartridgeShortName,
     }
-    manifest['Source-Url'] = 'http://' + process.env.OPENSHIFT_APP_DNS + '?' + new Buffer(JSON.stringify(params)).toString('base64') +  '.tar.gz';
+    manifest['Source-Url'] = 'http://' + process.env.OPENSHIFT_APP_DNS + '/' + new Buffer(JSON.stringify(params)).toString('base64') +  '/f.tar.gz';
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end(yaml.safeDump(manifest));
@@ -59,7 +59,8 @@ function manifest(req, res){
 }
 
 function download(req, res){
-  var query = Url.parse(req.url).search.replace(/^\?/, '').replace(/.tar.gz$/, '');
+  var query = Url.parse(req.url).path.replace(/^\//, '').replace(/\/f.tar.gz$/, '');
+  console.log(query)
   query = new Buffer(query, 'base64').toString('utf8')
   try{
     query = JSON.parse(query);
