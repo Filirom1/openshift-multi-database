@@ -13,7 +13,7 @@
     "tar.gz": "~0.1.1",
     "rimraf": "~2.2.1",
     "async": "~0.2.9",
-    "replacestream": "0.0.2",
+    "replacestream": "https://github.com/Filirom1/replacestream/archive/patch-1.tar.gz",
     "glob": "~3.2.3",
     "request": "~2.22.0",
     "js-yaml": "~2.1.0",
