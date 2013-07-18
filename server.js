@@ -1,6 +1,6 @@
 var http = require('http');
 var Url = require('url');
-var Path = require('path')
+var Path = require('path');
 var fs = require('fs');
 var querystring = require('querystring');
 var request = require('request').defaults({
@@ -11,8 +11,8 @@ var targz = require('tar.gz');
 var Uuid = require('node-uuid');
 var rimraf = require('rimraf');
 var _ = require('underscore');
-var replace = require('./replace');
-var rename = require('./rename');
+var replace = require('./lib/replace');
+var rename = require('./lib/rename');
 
 http.createServer(function (req, res) {
   if(/.tar.gz$/.test(req.url)){
@@ -49,8 +49,8 @@ function manifest(req, res){
     var params = {
       'source-url': sourceUrl,
       'cartridge-short-name': cartridgeShortName,
-      'old-cartridge-short-name': oldCartridgeShortName,
-    }
+      'old-cartridge-short-name': oldCartridgeShortName
+    };
     manifest['Source-Url'] = 'http://' + process.env.OPENSHIFT_APP_DNS + '/' + new Buffer(JSON.stringify(params)).toString('base64') +  '/f.tar.gz';
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -60,7 +60,6 @@ function manifest(req, res){
 
 function download(req, res){
   var query = Url.parse(req.url).path.replace(/^\//, '').replace(/\/f.tar.gz$/, '');
-  console.log(query)
   query = new Buffer(query, 'base64').toString('utf8')
   try{
     query = JSON.parse(query);
