@@ -10,6 +10,7 @@ var yaml = require('js-yaml');
 var targz = require('tar.gz');
 var Uuid = require('node-uuid');
 var rimraf = require('rimraf');
+var _ = require('underscore');
 var replace = require('./replace');
 var rename = require('./rename');
 
@@ -39,6 +40,10 @@ function manifest(req, res){
     var sourceUrl = manifest['Source-Url'];
     manifest['Name'] = name;
     manifest['Cartridge-Short-Name'] = cartridgeShortName;
+    manifest['Endpoints'].forEach(function(endPoint){
+      if (!endPoint['Private-Port']) return;
+      endPoint['Private-Port'] = _.random(1024, 9000);
+    });
 
     manifest['Source-Url'] = Url.format({
       protocol: 'http',
@@ -64,19 +69,19 @@ function download(req, res){
   console.log('download: ', query);
 
   var sourceUrl = query['source-url'];
-  var name = query['name'];
-  var oldName = query['old-name'];
   var cartridgeShortName = query['cartridge-short-name'];
   var oldCartridgeShortName = query['old-cartridge-short-name'];
 
-  if(!sourceUrl || !name || !cartridgeShortName || !oldName || !oldCartridgeShortName) return handleError(new Error('Pass source-url, name and cartridge-short-name, old-name, old-cartridge-short-name query params'), res);
+  if(!sourceUrl || !cartridgeShortName || !oldCartridgeShortName) return handleError(new Error('Pass source-url, cartridge-short-name, and old-cartridge-short-name query params'), res);
 
   var uuid = Uuid.v4();
   var tmpDir       = Path.join(process.env.OPENSHIFT_TMP_DIR, uuid);
   var tmpTarGzFile = Path.join(process.env.OPENSHIFT_TMP_DIR, uuid + '.tar.gz');
   debug('GET ' + sourceUrl);
-  request.get(sourceUrl).pipe(fs.createWriteStream(tmpTarGzFile)).on('end', function(){
-    debug('tar xzf -C' + tmpDir + ' ' + tmpTarGzFile );
+  var requ = request.get(sourceUrl);
+  requ.pipe(fs.createWriteStream(tmpTarGzFile));
+  requ.on('end', function(){
+    debug('tar xzf -C ' + tmpDir + ' ' + tmpTarGzFile );
     new targz().extract(tmpTarGzFile, tmpDir, function(err){
       if(err) return handleError(err, res);
       debug('rm -f ' + tmpTarGzFile );
@@ -92,19 +97,23 @@ function download(req, res){
           rename({
             regex: oldCartridgeShortName,
             replacement: cartridgeShortName,
-            paths: [Path.join(tmpDir, 'env')],
+            path: Path.join(tmpDir, 'env'),
             silent: true
           }, function(err){
             if(err) return handleError(err, res);
-            new targz().compress(tmpDir, tmpTarGzFile, function(err){
-              if(err) return handleError(err, res);
-              res.writeHead(200, {'Content-Type': 'text/plain'});
-              rimraf(tmpDir, function(err){
+            debug('ls ' + tmpDir);
+            fs.readdir(tmpDir, function(err, tmpDirChild){
+              var realTmpDir = Path.join(tmpDir, tmpDirChild[0]);
+              new targz().compress(realTmpDir, tmpTarGzFile, function(err){
                 if(err) return handleError(err, res);
-                var stream = fs.createReadStream(tmpTarGzFile);
-                stream.pipe(res);
-                stream.on('end', function(){
-                  fs.unlink(tmpTarGzFile);
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                rimraf(tmpDir, function(err){
+                  if(err) return handleError(err, res);
+                  var stream = fs.createReadStream(tmpTarGzFile);
+                  stream.pipe(res);
+                  stream.on('end', function(){
+                    fs.unlink(tmpTarGzFile);
+                  });
                 });
               });
             });

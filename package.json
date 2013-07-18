@@ -16,6 +16,7 @@
     "replacestream": "0.0.2",
     "glob": "~3.2.3",
     "request": "~2.22.0",
-    "js-yaml": "~2.1.0"
+    "js-yaml": "~2.1.0",
+    "underscore": "~1.5.1"
   }
 }
