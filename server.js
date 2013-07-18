@@ -17,6 +17,7 @@ var rename = require('./rename');
 http.createServer(function (req, res) {
   if(/.tar.gz$/.test(req.url)){
     return download(req, res);
+  }else if(/.ico/.test(req.url)){
   }else{
     return manifest(req,res);
   }
@@ -45,16 +46,12 @@ function manifest(req, res){
       endPoint['Private-Port'] = _.random(1024, 9000);
     });
 
-    manifest['Source-Url'] = Url.format({
-      protocol: 'http',
-      host: process.env.OPENSHIFT_APP_DNS,
-      query: {
-        'source-url': sourceUrl,
-        'cartridge-short-name': cartridgeShortName,
-        'old-cartridge-short-name': oldCartridgeShortName,
-        'download': 'manifest.tar.gz'
-      }
-    });
+    var params = {
+      'source-url': sourceUrl,
+      'cartridge-short-name': cartridgeShortName,
+      'old-cartridge-short-name': oldCartridgeShortName,
+    }
+    manifest['Source-Url'] = 'http://' + process.env.OPENSHIFT_APP_DNS + '?' + new Buffer(JSON.stringify(params)).toString('base64') +  '.tar.gz';
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end(yaml.safeDump(manifest));
@@ -62,15 +59,20 @@ function manifest(req, res){
 }
 
 function download(req, res){
-  var query = Url.parse(req.url).query || '';
-  query = querystring.parse(query);
+  var query = Url.parse(req.url).search.replace(/^\?/, '').replace(/.tar.gz$/, '');
+  query = new Buffer(query, 'base64').toString('utf8')
+  try{
+    query = JSON.parse(query);
+  }catch(err){
+    if(err) return handleError(err, res);
+  }
   console.log('download: ', query);
 
   var sourceUrl = query['source-url'];
   var cartridgeShortName = query['cartridge-short-name'];
   var oldCartridgeShortName = query['old-cartridge-short-name'];
 
-  if(!sourceUrl || !cartridgeShortName || !oldCartridgeShortName) return handleError(new Error('Pass source-url, cartridge-short-name, and old-cartridge-short-name query params'), res);
+  if(!sourceUrl || !cartridgeShortName || !oldCartridgeShortName) return handleError(new Error('Pass source-url, cartridge-short-name, and old-cartridge-short-name in JSON encoded in base64 in the path ;)'), res);
 
   var uuid = Uuid.v4();
   var tmpDir       = Path.join(process.env.OPENSHIFT_TMP_DIR, uuid);
