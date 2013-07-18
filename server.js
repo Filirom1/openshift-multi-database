@@ -97,7 +97,7 @@ function download(req, res){
           rename({
             regex: oldCartridgeShortName,
             replacement: cartridgeShortName,
-            path: Path.join(tmpDir, 'env'),
+            path: tmpDir,
             silent: true
           }, function(err){
             if(err) return handleError(err, res);
