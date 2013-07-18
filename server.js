@@ -50,9 +50,7 @@ function manifest(req, res){
       host: process.env.OPENSHIFT_APP_DNS,
       query: {
         'source-url': sourceUrl,
-        'name': name,
         'cartridge-short-name': cartridgeShortName,
-        'old-name': oldName,
         'old-cartridge-short-name': oldCartridgeShortName,
         'download': 'manifest.tar.gz'
       }
