@@ -89,14 +89,14 @@ function download(req, res){
         if(err) return handleError(err, res);
         debug('s/' + oldCartridgeShortName + '/' + cartridgeShortName + '/g in ' + tmpDir );
         replace({
-          regex: oldCartridgeShortName,
-          replacement: cartridgeShortName,
+          regex: '_' + oldCartridgeShortName + '_',
+          replacement: '_' + cartridgeShortName + '_',
           path: tmpDir
         }, function(err){
           if(err) return handleError(err, res);
           rename({
-            regex: oldCartridgeShortName,
-            replacement: cartridgeShortName,
+            regex: '_' + oldCartridgeShortName + '_',
+            replacement: '_' + cartridgeShortName + '_',
             path: tmpDir,
             silent: true
           }, function(err){
